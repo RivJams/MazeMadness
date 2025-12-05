@@ -6,7 +6,7 @@ Maze solving program that implements Stakcs and Queues for a DFS and BFS solver
 
 ## What Each Maze Solving Method Does
 
-WHY WE USE STACK FOR DFS:
+### WHY WE USE STACK FOR DFS:
 
 	In DFS, we explore as far down a path as possible before backtracking.
 	It picks a path and follows it until it hits a dead end, 
@@ -14,7 +14,7 @@ WHY WE USE STACK FOR DFS:
 
 Stacks allow us to easily backtrack to the most recent position. Each time we visit a new location, we push it onto the stack
 
-WHY WE USE QUEUE IN BFS:
+### WHY WE USE QUEUE IN BFS:
 
 	In BFS, we explore the maze level-by-level, checking all neighbors.
 	First, explores all positions one step away from start,
@@ -70,3 +70,23 @@ Your console output should look something like this:
 	
 	Quitting maze server...
 	[Server] BYE
+
+## Core Functionality
+
+This program communicates with the server using single-line responses to send commands back and forth. The "LOOK" command however, will return a multi-line response. 
+
+The "LOOK" command is the part of the code in the example console output that displays the maze. The program will look for "MAZE BEGIN" and then read the lines in-between until it sees "MAZE END." These lines recieved will be used to construct the maz in the console output.
+
+The function parse_maze then takes the information from the "LOOK" command to construct the maze as a 2D grid. This function will look for 'P' and assign the row and column index to player_pos. The function also does the same with 'E' and exit_pos.
+
+The get_neighbors function is also really important to this program. This function checks each of the four directions. A neighbor is valid if it's within bounds and it's not a wall.
+
+Once DFS and BFS solve our mazes, we will use the reconstruct_path function. This function reconstructs the path by starting at the exit and following a node's parents all the way back to the start.
+
+## Challenges
+
+With any program that already has it's building blocks exposed, it takes a little bit to figure out exactly how things are expected to work and how everything plays together.
+
+## Design Ideas
+
+I decided not to physically move the player position throughout the maze as it solves.
