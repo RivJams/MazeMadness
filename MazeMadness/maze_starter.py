@@ -26,6 +26,8 @@ class Stack:
 
     # Why we use stack for DFS:
     # In DFS, we explore as far down a path as possible before backtracking.
+    # A stack allows us to easily backtrack to the most recent position.
+    # Each time we visit a new position, we push it onto the stack.
 
     def __init__(self):
         """Initialize an empty stack."""
@@ -97,6 +99,8 @@ class MazeServerClient:
     Handles communication with the Maze Server.
     You should copy the maze_server.ext file to the same
     project folder as your main python script for this to work.
+
+    All commands are transmitted as text, and responses are read as text.
     """
     #SERVER_CMD = ["./maze_server.exe"]
     
@@ -235,18 +239,20 @@ def parse_maze(maze_lines: List[str]) -> Tuple[List[List[str]], Position, Option
     player_pos = None
     exit_pos = None
 
+    # Go through each row
     for row_idx, line in enumerate(maze_lines):
+        # Converts the string line into a list of characters
         row = list(line)
         grid.append(row)
 
+        # Search the row for 'P' and 'E'
         for col_idx, cell in enumerate(row):
             if cell == 'P':
-                player_pos = (row_idx, col_idx)
+                player_pos = (row_idx, col_idx) # Finds player
             elif cell == 'E':
-                exit_pos = (row_idx, col_idx)
+                exit_pos = (row_idx, col_idx) # Finds exit
 
     return grid, player_pos, exit_pos
-
 
 def print_maze(maze_lines: List[str]) -> None:
     """Pretty-print the maze to the console."""
@@ -261,18 +267,17 @@ def get_neighbors(grid: List[List[str]], pos: Position) -> List[Position]:
     row, col = pos
     neighbors = []
 
+    # Check each of the four directions
+    # A neighbor is valid if it's within bounds and not a wall
     # North
     if row > 0 and grid[row - 1][col] != '#':
         neighbors.append((row - 1, col))
-
     # South
     if row < len(grid) - 1 and grid[row + 1][col] != '#':
         neighbors.append((row + 1, col))
-
     # East
     if col < len(grid[0]) - 1 and grid[row][col + 1] != '#':
         neighbors.append((row, col + 1))
-
     # West
     if col > 0 and grid[row][col - 1] != '#':
         neighbors.append((row, col - 1))
@@ -285,15 +290,22 @@ def reconstruct_path(parent: Dict[Position, Position],
     """
     Reconstruct path from start to goal using parent dict:
         parent[child] = parent_of_child
+
+    Reconstructs the path by starting at the exit and following
+    parent links back to the start.
     """
     path = []
     current = goal
 
+    # work backwards and follow parent links back to start
     while current != start:
         path.append(current)
-        current = parent[current]
+        current = parent[current] # move to parent
 
+    # finally add the start position
     path.append(start)
+
+    # reverse the path to get it from start to goal
     path.reverse()
     return path
 
@@ -303,14 +315,17 @@ def follow_path_with_moves(client: MazeServerClient, path: List[Position]) -> No
     to the server to actually walk that path.
     Assumes the server's current position is p0 at the start.
     """
+
+    # Go through each pair of positions
     for i in range(len(path) - 1):
         current = path[i]
         next_pos = path[i + 1]
 
-        #Determine the direction to move
+        # Determine the direction to move
         row_diff = next_pos[0] - current[0]
         col_diff = next_pos[1] - current[1]
 
+        # Convert row/col difference to direction
         if row_diff == -1:
             direction = "N"
         elif row_diff == 1:
@@ -323,10 +338,11 @@ def follow_path_with_moves(client: MazeServerClient, path: List[Position]) -> No
             print("Error: Can not move from ", current, "to", next_pos)
             continue
 
-        #Send the move command
+        # Send the move command
         response = client.move(direction)
         print(f"Moved {direction}: {response}")
 
+        # Check if we reached the exit
         if "EXIT FOUND" in response:
             print("Exit reached!")
             break
@@ -341,35 +357,38 @@ def dfs_escape(client: MazeServerClient) -> Optional[List[Position]]:
     """
     Solve the maze using Depth-First Search with a stack.
     Returns the path to the exit as a list of positions, or None if no path found.
+    
+    DFS explores the maze by going as deep as possible down one path before backtracking.
+    It picks a path and follows it until it hits a dead end,
+    then backtracks to the last intersection to try a new path.
     """
     print("\n[DFS Solver] Starting DFS escape...")
 
+    # Calls look to see the maze from the server
     maze_lines = client.look()
+    # Convert maze lines to grid and find start/exit positions
     grid, start_pos, exit_pos = parse_maze(maze_lines)
-
-    #if start_pos is None:
-    #    print("Error: Player position not found in maze.")
-    #    return None
     
     # Initialize stack and visited set
+    # Push the start position onto the stack
     stack = Stack()
     stack.push(start_pos)
     visited = set()
     visited.add(start_pos)
-    parent = {}
+    
+    parent = {} # Dictionary to track parent of each position for path reconstruction
 
     nodes_explored = 0
 
     while not stack.is_empty():
+        # Pop the most recently added position from the stack
         current_pos = stack.pop()
         nodes_explored += 1
 
-        #maze_lines = client.look()
-        #grid, player_pos, exit_pos = parse_maze(maze_lines)
-
-        # Check if we found the exit
-        if exit_pos is not None and current_pos == exit_pos:
+        # Check if we found the exit and end the search
+        if current_pos == exit_pos:
             print(f"[DFS Solver] Exit found after exploring {nodes_explored} nodes.")
+            # Reconstruct the path from start to exit
             path = reconstruct_path(parent, start_pos, current_pos)
             print("Path length:", len(path))
             return path
@@ -377,9 +396,12 @@ def dfs_escape(client: MazeServerClient) -> Optional[List[Position]]:
         # Explore neighbors
         neighbors = get_neighbors(grid, current_pos)
 
+        # For each neighbor, if not visited, mark visited, so we don't go back. Set parent, and push to stack
         for neighbor in neighbors:
             if neighbor not in visited:
+                # Mark neighbor as visited
                 visited.add(neighbor)
+                # Set the parent of the new neighbor to current position
                 parent[neighbor] = current_pos
                 stack.push(neighbor)
 
@@ -391,10 +413,21 @@ def bfs_escape(client: MazeServerClient) -> Optional[List[Position]]:
     """
     Solve the maze using Breadth-First Search with a queue.
     Returns the path to the exit as a list of positions, or None if no path found.
+    
+    BFS explores the maze level-by-level, checking all neighbors at the current depth.
+    First, it explores all positions one step away from the start,
+    then all positions two steps away, and so on, until it finds the exit.
+    This guarantees the first time we reach the exit, we have found the shortest path.
+
+    When we discover a new position, we add it to the end of the queue.
+    This way, positions that were added earlier (closer to the start) are explored first.
+    This makes us explore positions in the order we found them, ensuring we find the shortest path.
     """
     print("\n[BFS Solver] Starting BFS escape...")
 
+    # Calls look to see the maze from the server
     maze_lines = client.look()
+    # Convert maze lines to grid and find start/exit positions
     grid, start_pos, exit_pos = parse_maze(maze_lines)
     
     # Initialize queue and visited set
@@ -402,54 +435,35 @@ def bfs_escape(client: MazeServerClient) -> Optional[List[Position]]:
     queue.enqueue(start_pos)
     visited = set()
     visited.add(start_pos)
-    parent = {}
+    
+    parent = {} # Dictionary to track parent of each position for path reconstruction
 
     nodes_explored = 0
 
     while not queue.is_empty():
+        # Dequeue the oldest added position from the queue to make sure we exoplore level by level
         current_pos = queue.dequeue()
         nodes_explored += 1
 
-        maze_lines = client.look()
-        grid, player_pos, exit_pos = parse_maze(maze_lines)
-
-        # Check if we found the exit
-        
-        if exit_pos is not None and current_pos == exit_pos:
+        # Check if we found the exit        
+        if current_pos == exit_pos:
             print(f"[BFS Solver] Exit found after exploring {nodes_explored} nodes.")
+            # Reconstruct the path from start to exit
             path = reconstruct_path(parent, start_pos, current_pos)
             print("Path length:", len(path))
             return path
         
-        # Explore neighbors
+        # Explore all neighbors of the current position
         neighbors = get_neighbors(grid, current_pos)
 
+        # Look at each neighbor, if not visited, mark visited, set parent, and enqueue
         for neighbor in neighbors:
             if neighbor not in visited:
+                # Mark neighbor as visited
                 visited.add(neighbor)
+                # Set the parent of the new neighbor to current position
                 parent[neighbor] = current_pos
                 queue.enqueue(neighbor)
-
-                # Try to move to this neighbor
-                row_diff = neighbor[0] - current_pos[0]
-                col_diff = neighbor[1] - current_pos[1]
-
-                if row_diff == -1:
-                    direction = "N"
-                elif row_diff == 1:
-                    direction = "S"
-                elif col_diff == 1:
-                    direction = "E"
-                elif col_diff == -1:
-                    direction = "W"
-
-                response = client.move(direction)
-
-                if "EXIT FOUND" in response:
-                    print(f"[BFS Solver] Exit found after exploring {nodes_explored} nodes.")
-                    path = reconstruct_path(parent, start_pos, neighbor)
-                    print("Path length:", len(path))
-                    return path
 
     print("[BFS Solver] No path to exit found.")
     return None
@@ -469,7 +483,7 @@ def main():
  
         #2. Initialize a maze (change "1" to another ID if you want)
         print("\nInitializing maze 1...")
-        init_response = client.init_maze("1")
+        init_response = client.init_maze("2")
         print(init_response)
 
         #3. Look at the maze
