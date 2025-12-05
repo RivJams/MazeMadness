@@ -23,3 +23,50 @@ WHY WE USE QUEUE IN BFS:
 This will guarantee the first time we reach the exit is the shortest path.
 
 When we discover a new location, we add it to the end of the queue. This way, positions that were added earlier (the ones closest to the start) are explored first. this makes us explore positions in the order that we found them, ensuring we find the shortest path.
+
+## How To Use
+
+Program is very straight-forward to run. When you start the program, it will show the available mazes that can be run by the server. In our case, it will show that we have mazes 1, 2, and 3. The program will then ask what maze you would like to run. Just keep in mind that there is very little error handling, so if you make an invalid decision, please restart the program.
+
+Your console output should look something like this:
+
+	[Server] MAZE_SERVER READY
+	Available mazes:
+	MAZES 1 2 3
+	
+	Choose a maze to initialize: 2
+	
+	Initializing maze 1...
+	OK INIT maze_id=2 rows=9 cols=15
+	
+	Initial LOOK:
+	###############
+	#P     #     E#
+	# ### ### ### #
+	#   #   #   # #
+	### # ### # # #
+	#   #     #   #
+	# ### ##### ###
+	#     #       #
+	###############
+	Running DFS solver ...
+	
+	[DFS Solver] Starting DFS escape...
+	[DFS Solver] Exit found after exploring 28 nodes.
+	Path length: 25
+	
+	Resetting maze...
+	Maze reset.
+	
+	Running BFS solver ...
+	
+	[BFS Solver] Starting BFS escape...
+	[BFS Solver] Exit found after exploring 46 nodes.
+	Path length: 21
+	
+	Comparison of DFS and BFS paths:
+	DFS path length: 25
+	BFS path length: 21
+	
+	Quitting maze server...
+	[Server] BYE
