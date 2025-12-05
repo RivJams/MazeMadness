@@ -102,6 +102,7 @@ class MazeServerClient:
 
     All commands are transmitted as text, and responses are read as text.
     """
+    #REMOVE COMMENT TO TEST ON YOUR MACHINE
     #SERVER_CMD = ["./maze_server.exe"]
     
     #THIS IS NOT OPTIMAL, BUT WAS THE ONLY WAY I COULD GET IT TO WORK
@@ -309,45 +310,6 @@ def reconstruct_path(parent: Dict[Position, Position],
     path.reverse()
     return path
 
-def follow_path_with_moves(client: MazeServerClient, path: List[Position]) -> None:
-    """
-    Given a path of positions [p0, p1, ..., pk], send MOVE commands
-    to the server to actually walk that path.
-    Assumes the server's current position is p0 at the start.
-    """
-
-    # Go through each pair of positions
-    for i in range(len(path) - 1):
-        current = path[i]
-        next_pos = path[i + 1]
-
-        # Determine the direction to move
-        row_diff = next_pos[0] - current[0]
-        col_diff = next_pos[1] - current[1]
-
-        # Convert row/col difference to direction
-        if row_diff == -1:
-            direction = "N"
-        elif row_diff == 1:
-            direction = "S"
-        elif col_diff == 1:
-            direction = "E"
-        elif col_diff == -1:
-            direction = "W"
-        else:
-            print("Error: Can not move from ", current, "to", next_pos)
-            continue
-
-        # Send the move command
-        response = client.move(direction)
-        print(f"Moved {direction}: {response}")
-
-        # Check if we reached the exit
-        if "EXIT FOUND" in response:
-            print("Exit reached!")
-            break
-
-
 # ============================================================================
 # DFS & BFS Solvers (YOU IMPLEMENT)
 # ============================================================================
@@ -474,16 +436,18 @@ def bfs_escape(client: MazeServerClient) -> Optional[List[Position]]:
 
 def main():
     client = MazeServerClient()
+    maze_selected = 0
 
     try:
         #1. List mazes
         print("Available mazes:")
         mazes = client.list_mazes()
         print(mazes)
- 
+        maze_selected = input("\nChoose a maze to initialize: ")
+
         #2. Initialize a maze (change "1" to another ID if you want)
         print("\nInitializing maze 1...")
-        init_response = client.init_maze("2")
+        init_response = client.init_maze(maze_selected)
         print(init_response)
 
         #3. Look at the maze
