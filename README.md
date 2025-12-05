@@ -1,5 +1,5 @@
 # MazeMadness (Data Structures Final Project)
-Maze solving program that implements Stakcs and Queues for a DFS and BFS solver
+Maze solving program that implements Stakcs and Queues for a DFS and BFS solver. We will see how stacks and queues change exploration behavior and efficiency.
 
 	Stack: Last-In-First-Out (LIFO) structure for Depth-First-Search (DFS)
 	Queue: First-In-First-Out (FIFO) structure for Bredth-first-Search (BFS)
@@ -8,11 +8,11 @@ Maze solving program that implements Stakcs and Queues for a DFS and BFS solver
 
 ### WHY WE USE STACK FOR DFS:
 
-	In DFS, we explore as far down a path as possible before backtracking.
+	In DFS, we explore as far down one path as possible before backtracking.
 	It picks a path and follows it until it hits a dead end, 
 	then backtracks to the last intersection to try a new path.
 
-Stacks allow us to easily backtrack to the most recent position. Each time we visit a new location, we push it onto the stack
+Stacks allow us to easily backtrack to the most recent position. Each time we visit a new location, we push it onto the stack. We can then pop from the top to get the most recently discovered position. A stack makes sure we go DEEP before exploring different routes.
 
 ### WHY WE USE QUEUE IN BFS:
 
@@ -83,10 +83,41 @@ The get_neighbors function is also really important to this program. This functi
 
 Once DFS and BFS solve our mazes, we will use the reconstruct_path function. This function reconstructs the path by starting at the exit and following a node's parents all the way back to the start.
 
+## DFS And BFS Algorithms
+
+DFS:
+
+	1. Start at inital position, push it onto stack
+	2. While the stack isn't empty:
+	- Pop the most recent position
+	- If EXIT -> Success and reconstruct path
+	- Get all neighbors
+	- For each unvisited neighbor:
+	-- Mark as visited
+	-- Track parent
+	-- Push onto stack
+
+BFS:
+
+	1. Start at inital position, enqueue
+	2. While the queue isn't empty:
+	- Dequeue the oldest position
+	- If EXIT -> Success and reconstruct path
+	- Get all neighbors
+	- For each unvisited neighbor
+	-- Mark as visited
+	-- Track parent
+	-- enqueue
+
 ## Challenges
 
 With any program that already has it's building blocks exposed, it takes a little bit to figure out exactly how things are expected to work and how everything plays together. Messing with the move function was also a bit of a pain, so I decided not to use it and went with a slightly different approach.
 
-## Design Ideas
+It was also a bit hard to figure out exactly what the difference between DFS and BFS, but a Geeks for Geeks article helped out a bit.
 
-I decided not to physically move the player position throughout the maze as it solves.
+## What I Learned
+
+	1. Data Structures Matter: Changing from a Stack to a Queue completely changes how the algorithm explores.
+	2. DFS is simpler but doesn't guarantee the shortest path.
+	3. BFS always finds the shortest path, but is more memory demanding.
+
