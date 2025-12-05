@@ -85,7 +85,7 @@ Once DFS and BFS solve our mazes, we will use the reconstruct_path function. Thi
 
 ## Challenges
 
-With any program that already has it's building blocks exposed, it takes a little bit to figure out exactly how things are expected to work and how everything plays together.
+With any program that already has it's building blocks exposed, it takes a little bit to figure out exactly how things are expected to work and how everything plays together. Messing with the move function was also a bit of a pain, so I decided not to use it and went with a slightly different approach.
 
 ## Design Ideas
 
