@@ -1,12 +1,11 @@
 """
-Escape Maze Simulator - Final Starter Code
+MazeMadness DFS & BFS Solver
+Data Structures Final Project Code
+River Wallerstedt 12/8/2025
 
-This file will provide example code for:
-- Connection to the maze_server.exe file (found on canvas)
-- How to start the server and work on your code
-- Provides an outline for you to use or not use (your choice)
-- Run this code to test your connection and get started coding the required material
-- There are 3 maze patterns stored in the server right now
+This code provides a framework for solving mazes using
+Depth-First Search (DFS) and Breadth-First Search (BFS) algorithms.
+This code also includes a client to communicate with a Maze Server
 """
 
 import subprocess
@@ -456,3 +455,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
