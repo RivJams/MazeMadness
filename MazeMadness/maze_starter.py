@@ -157,36 +157,10 @@ class MazeServerClient:
     def init_maze(self, maze_id: str) -> str:
         #Will use send_simple to initialize maze 1,2 or 3
         return self.send_simple(f"INIT {maze_id}")
-
-    def move(self, direction: str) -> str:
-        """
-        direction in {"N", "S", "E", "W"}
-        Returns one of:
-            "BLOCKED WALL"
-            "OK MOVE row=... col=..."
-            "EXIT FOUND row=... col=... steps=..."
-        """
-        #Also use send_simple to command a direction
-        return self.send_simple(f"MOVE {direction}")
-
-    def status(self) -> str:
-        #Uses send_simple with STATUS cmd
-        return self.send_simple("STATUS")
-
+    
     def reset(self) -> str:
         #Uses send_simple with RESET cmd
         return self.send_simple("RESET")
-
-    def help(self) -> str:
-        #HELP returns multiple lines; we read until no more lines for a moment
-        self._write_line("HELP")
-        lines = []
-        while True:
-            line = self._read_line()
-            lines.append(line)
-            if "END" in line:
-                break
-        return "\n".join(lines)
 
     def quit(self) -> None:
         #QUIT cmd - use try except finally to terminate appropriately
